@@ -1,0 +1,43 @@
+name: Auto Deploy
+
+run-name: Deploy by @${{ github.actor }}
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-npm:
+    name: build-and-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      # 缓存 yarn node_modules
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      # 安装依赖 yarn
+      - name: Install dependencies
+      # 如果没有命中缓存才执行 npm install
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+      # 发布npm
+      - name: Publish  
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_publish}}
