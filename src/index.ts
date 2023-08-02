@@ -10,19 +10,22 @@ import { HtmlTagDescriptor, normalizePath, Plugin } from "vite";
 interface VitePluginSzMapOptions {
   libPath? :string;
   outPath?: string;
+  useGlobal?: boolean
 }
 
 function vitePluginSzMap(
   options: VitePluginSzMapOptions = {
     outPath: "",
-    libPath :""
+    libPath: "",
+    useGlobal: true
   }
 ): Plugin {
-  let szMapDist = path.join(options.libPath || "./node_modules/@sanzhi/szmap" ,'dist');
+  let szMapDist = path.join(options.libPath || "./node_modules/@sanzhisoft/szmap" ,'dist');
   let base = "/";
   let outDir = "dist";
   let isBuild = false;
   let outPath = options.outPath ||  "/libs/szmap";
+  let useGlobal = options.useGlobal === undefined ? true : options.useGlobal;
   return {
     name: "vite-plugin-szmap",
     config(config, { command }) {
@@ -36,22 +39,27 @@ function vitePluginSzMap(
     closeBundle() {
       if (isBuild) {
         try {
-          fs.copySync(
+          if (useGlobal) {
+            fs.copySync(
               path.join(szMapDist, "szmap.min.js"),
               path.join(outDir, outPath, "szmap.min.js")
-          );
-          fs.copySync(
+            );
+            fs.copySync(
               path.join(szMapDist, "szmap.min.css"),
               path.join(outDir,outPath, "dc.min.css")
-          );
+            );
+          }
           fs.copySync(
-              path.join(szMapDist, "resources"),
-              path.join(outDir, outPath, "resources")
+            path.join(szMapDist, "resources"),
+            path.join(outDir, outPath, "resources")
           );
         } catch (e) {}
       }
     },
     transformIndexHtml() {
+      if (!useGlobal) {
+        return []
+      }
       let tags: HtmlTagDescriptor[] = [];
       tags.push({
         tag: "script",

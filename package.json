@@ -1,6 +1,6 @@
 {
   "name": "@sanzhisoft/vite-plugin-szmap",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "repository": "https://github.com/sanzhisoft/vite-plugin-szmap.git",
   "author": "Blackzzc <zzc7400@gmail.com>",
   "license": "Apache 2.0",
